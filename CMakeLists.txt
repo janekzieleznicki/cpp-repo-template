@@ -1,25 +1,44 @@
 cmake_minimum_required(VERSION 3.5)
 project(FormatOutput CXX)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+# Add project_options v0.12.3
+# https://github.com/cpp-best-practices/project_options
+include(FetchContent)
+FetchContent_Declare(_project_options URL https://github.com/cpp-best-practices/project_options/archive/refs/tags/v0.12.3.zip)
+FetchContent_MakeAvailable(_project_options)
+include(${_project_options_SOURCE_DIR}/Index.cmake)
 
-add_definitions("-std=c++11")
-
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-  message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-  file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
-                "${CMAKE_BINARY_DIR}/conan.cmake"
-                EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
-                TLS_VERIFY ON)
+if(CONAN_EXPORTED)
+     project_options(
+          ENABLE_IPO
+     )
+     include(conanbuildinfo.cmake)
+     conan_basic_setup()
+else()
+     project_options(
+          ENABLE_CACHE
+          # WARNINGS_AS_ERRORS
+          ENABLE_CPPCHECK
+          ENABLE_CLANG_TIDY
+          # ENABLE_COVERAGE
+          ENABLE_CONAN
+          ENABLE_IPO
+          # ENABLE_INCLUDE_WHAT_YOU_USE
+          # ENABLE_DOXYGEN
+          # ENABLE_USER_LINKER
+          ENABLE_BUILD_WITH_TIME_TRACE
+          # ENABLE_UNITY
+          ENABLE_SANITIZER_ADDRESS
+          ENABLE_SANITIZER_LEAK
+          ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
+          # ENABLE_SANITIZER_THREAD
+          # ENABLE_SANITIZER_MEMORY
+          # CONAN_OPTIONS
+     )
 endif()
 
-include(${CMAKE_BINARY_DIR}/conan.cmake)
+target_compile_features(project_options INTERFACE cxx_std_20)
 
-conan_cmake_run(CONANFILE conanfile.py
-                BASIC_SETUP CMAKE_TARGETS
-                BUILD missing)
-                
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)

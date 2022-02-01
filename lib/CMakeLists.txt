@@ -1,4 +1,4 @@
-project(StaticFoo)
+project(TemplateLib)
 
 
 file(GLOB SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Foo.cpp)
@@ -9,14 +9,19 @@ include_guard(GLOBAL)
 add_library(${PROJECT_NAME} OBJECT ${SOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-target_compile_options(${PROJECT_NAME} PRIVATE -Werror -Wall -Wextra)
 
 add_library(linkedfoo SHARED $<TARGET_OBJECTS:${PROJECT_NAME}>)
 add_library(staticfoo STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 
-source_group(TREE "${PROJECT_SOURCE_DIR}/include" PREFIX "Header Files" FILES ${HEADER_FILES})
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+target_link_libraries(${PROJECT_NAME} 
+    INTERFACE 
+        project_options 
+        project_warnings
+    )
+
+source_group(TREE "${PROJECT_SOURCE_DIR}/include" PREFIX "Header Files" FILES ${HEADER_FILES})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(FILES ${HEADER_FILES} DESTINATION include)
