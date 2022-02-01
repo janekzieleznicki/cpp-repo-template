@@ -1,8 +1,20 @@
 #include <iostream>
 
 #include "Foo.hpp"
+#include <semaphore>
+#include <stop_token>
+#include <thread>
+#include <csignal>
+
+std::binary_semaphore semaphore{0};
 
 int main() {
-  std::cout << "Hello, World! Foo: " << foo::Foo{} << std::endl;
+  std::signal(SIGTERM, [](int){ semaphore.release();});
+  std::signal(SIGINT, [](int){ semaphore.release();});
+  while (!semaphore.try_acquire()) {
+    // sanitizer test
+     auto i = new int;
+    std::cout << "Address: " << i << std::endl;
+  }
   return 0;
 }
